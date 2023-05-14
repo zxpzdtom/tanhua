@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
-import { Header, Icon, Input } from 'react-native-elements';
+import { Header, Icon, Input } from '@rneui/themed';
 import mockjs from 'mockjs';
 
 const mockData = mockjs.mock({
@@ -69,7 +69,7 @@ const DynamicDetailScreen = ({ route, navigation }) => {
       <View style={styles.container}>
         <Header
           centerComponent={{ text: '动态详情', style: { color: '#fff', fontSize: 18 } }}
-          leftComponent={<Icon name='chevron-left' type='feather' color='#fff' onPress={navigation.goBack} />}
+          leftComponent={<Icon name='chevron-left' type="feather" color='#fff' onPress={navigation.goBack} />}
           containerStyle={{ backgroundColor: '#007AFF' }}
         />
         <FlatList
@@ -102,7 +102,7 @@ const DynamicDetailScreen = ({ route, navigation }) => {
               <View style={styles.commentHeader}>
                 <Text style={styles.commentTitle}>评论 ({dynamic.comments.length})</Text>
                 <TouchableOpacity onPress={() => console.log('点赞')} style={{ flexDirection: 'row', gap: 8 }}>
-                  <Icon name="thumbs-up" size={20} color="#999" />
+                  <Icon name="thumbs-up" type="feather" size={20} color="#999" />
                   <Text>{dynamic.likes}</Text>
                 </TouchableOpacity>
               </View>

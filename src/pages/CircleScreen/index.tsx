@@ -1,8 +1,7 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { Tab } from 'react-native-elements';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { Tab, Icon } from '@rneui/themed';
 import Mock from 'mockjs';
 
 const Separator = () => <View style={styles.separator} />;
@@ -40,11 +39,11 @@ const HomeScreen = () => {
         </View>
         <View style={styles.footer}>
           <View style={styles.iconContainer}>
-            <Icon name="thumbs-up" size={16} color="#999" />
+            <Icon name="thumbs-up" type="feather" size={16} color="#999" />
             <Text style={styles.iconText}>{item.likes}</Text>
           </View>
           <View style={styles.iconContainer}>
-            <Icon name="comment" size={16} color="#999" />
+            <Icon name="message-square" type="feather" size={16} color="#999" />
             <Text style={styles.iconText}>{item.comments}</Text>
           </View>
         </View>
@@ -123,10 +122,8 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   tab: {
-    backgroundColor: '#fff',
     borderBottomWidth: 0,
   },
   indicator: {

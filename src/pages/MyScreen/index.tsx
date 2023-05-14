@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Avatar, Icon, Text, Button } from 'react-native-elements';
+import { Avatar, Icon, Text, Button } from '@rneui/themed';
 
 const MyScreen = () => {
   const navigation = useNavigation<any>();

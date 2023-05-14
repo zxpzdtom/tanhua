@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, FlatList, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { ListItem, Avatar } from 'react-native-elements';
+import { ListItem, Avatar } from '@rneui/themed';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Mock from 'mockjs';
 
