@@ -3,9 +3,9 @@ import dayjs from 'dayjs';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Avatar, ListItem } from '@rneui/themed';
-import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CityPicker from '../../components/CityPicker';
+import DateTimePicker from '../../components/DateTimePicker';
 
 const ProfileScreen = () => {
   const navigation = useNavigation<any>();
@@ -14,6 +14,7 @@ const ProfileScreen = () => {
   const [birthday, setBirthday] = React.useState(new Date());
   const [city, setCity] = React.useState();
   const [pickerVisible, setPickerVisible] = React.useState(false);
+  const [datePickerVisible, setDatePickerVisible] = React.useState(false);
 
   const handleOpenPicker = () => {
     setPickerVisible(true);
@@ -68,28 +69,22 @@ const ProfileScreen = () => {
                 onChangeText={(text) => setName(text)}
                 value={name}
                 placeholder="请输入昵称"
-                style={styles.input}
               />
             </View>
           </ListItem.Content>
         </ListItem>
         <Text style={styles.label}>生日</Text>
         <TouchableOpacity onPress={() => {
-          DateTimePickerAndroid.open({
-            value: birthday,
-            onChange: (event, date) => setBirthday(date),
-            mode: 'date',
-          });
+          setDatePickerVisible(true);
         }}>
           <ListItem>
             <ListItem.Content>
-              <View style={styles.inputWrapper}>
+              <View style={styles.inputWrapper} pointerEvents="none">
                 <Icon name='calendar' size={20} color='#007AFF' style={styles.inputIcon} />
                 <ListItem.Input
                   value={dayjs(birthday).format('YYYY-MM-DD')}
                   placeholder="请选择生日"
                   editable={false}
-                  style={styles.input}
                 />
               </View>
             </ListItem.Content>
@@ -99,13 +94,12 @@ const ProfileScreen = () => {
         <TouchableOpacity onPress={handleOpenPicker}>
           <ListItem>
             <ListItem.Content>
-              <View style={styles.inputWrapper}>
+              <View style={styles.inputWrapper} pointerEvents="none">
                 <Icon name='map-marker' size={20} color='#007AFF' style={styles.inputIcon} />
                 <ListItem.Input
                   value={city}
                   placeholder="请选择城市"
                   editable={false}
-                  style={styles.input}
                 />
               </View>
             </ListItem.Content>
@@ -119,6 +113,12 @@ const ProfileScreen = () => {
           <Text style={styles.submitButtonText}>提 交</Text>
         </View>
       </TouchableOpacity>
+      <DateTimePicker
+        visible={datePickerVisible}
+        value={birthday}
+        onClose={() => setDatePickerVisible(false)}
+        onChange={(date) => setBirthday(date)}
+      />
       <CityPicker visible={pickerVisible} onClose={handleClosePicker} onChange={handleCityChange} />
     </View>
   );
@@ -166,9 +166,6 @@ const styles = StyleSheet.create({
   },
   inputIcon: {
     marginRight: 10,
-  },
-  input: {
-    height: 60,
   },
   submitButton: {
     backgroundColor: '#007AFF',

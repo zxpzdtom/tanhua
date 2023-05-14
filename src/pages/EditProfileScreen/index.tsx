@@ -1,12 +1,22 @@
 import React from "react";
 import dayjs from "dayjs";
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 import * as ImagePicker from "expo-image-picker";
-import { View, StyleSheet, ScrollView, Modal, TouchableWithoutFeedback, TextInput } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Modal,
+  TouchableWithoutFeedback,
+  TextInput,
+  Dimensions,
+} from "react-native";
 import { Header, Avatar, Icon, ListItem, Text } from "@rneui/themed";
-import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import Select from "../../components/Select";
 import CityPicker from "../../components/CityPicker";
+import DateTimePicker from "../../components/DateTimePicker";
+
+const { height } = Dimensions.get('window');
 
 const EditProfileScreen = ({ route, navigation }) => {
   const [profileData, setProfileData] = React.useState({
@@ -33,7 +43,7 @@ const EditProfileScreen = ({ route, navigation }) => {
 
   const onClose = () => {
     setBottomSheetVisible(null);
-  }
+  };
 
   const selectAvatar = async () => {
     // 打开相册
@@ -76,7 +86,10 @@ const EditProfileScreen = ({ route, navigation }) => {
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
-        <ListItem bottomDivider onPress={() => setBottomSheetVisible("nickname")}>
+        <ListItem
+          bottomDivider
+          onPress={() => setBottomSheetVisible("nickname")}
+        >
           <ListItem.Content>
             <ListItem.Title>昵称</ListItem.Title>
           </ListItem.Content>
@@ -87,17 +100,13 @@ const EditProfileScreen = ({ route, navigation }) => {
         <ListItem
           bottomDivider
           onPress={() => {
-            DateTimePickerAndroid.open({
-              value: new Date(profileData.birthday),
-              onChange: (event, date) => handleChange('birthday', date),
-              mode: "date",
-            });
+            setBottomSheetVisible("birthday");
           }}
         >
           <ListItem.Content>
             <ListItem.Title>生日</ListItem.Title>
           </ListItem.Content>
-          <Text>{dayjs(profileData.birthday).format('YYYY-MM-DD')}</Text>
+          <Text>{dayjs(profileData.birthday).format("YYYY-MM-DD")}</Text>
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
@@ -128,7 +137,10 @@ const EditProfileScreen = ({ route, navigation }) => {
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
-        <ListItem bottomDivider onPress={() => setBottomSheetVisible("monthlyIncome")}>
+        <ListItem
+          bottomDivider
+          onPress={() => setBottomSheetVisible("monthlyIncome")}
+        >
           <ListItem.Content>
             <ListItem.Title>月收入</ListItem.Title>
           </ListItem.Content>
@@ -158,35 +170,40 @@ const EditProfileScreen = ({ route, navigation }) => {
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
+        <DateTimePicker
+          visible={bottomSheetVisible === "birthday"}
+          value={profileData.birthday}
+          onClose={onClose}
+          onChange={(date) => handleChange("birthday", date)}
+        />
+
         {bottomSheetVisible === "nickname" && (
-        <Modal animationType="slide" visible>
-          <View style={styles.bottomSheet}>
-            <View style={styles.bottomSheetHeader}>
-              <TouchableWithoutFeedback onPress={onClose}>
-                <Text style={styles.bottomSheetCancel}>取消</Text>
-              </TouchableWithoutFeedback>
-              <Text style={styles.bottomSheetTitle}>修改昵称</Text>
-              <TouchableWithoutFeedback
-                onPress={() => handleChange("nickname", nickname)}
-              >
-                <Text style={styles.bottomSheetDone}>完成</Text>
-              </TouchableWithoutFeedback>
+          <Modal animationType="slide" visible>
+            <View style={styles.bottomSheet}>
+              <View style={styles.bottomSheetHeader}>
+                <TouchableWithoutFeedback onPress={onClose}>
+                  <Text style={styles.bottomSheetCancel}>取消</Text>
+                </TouchableWithoutFeedback>
+                <Text style={styles.bottomSheetTitle}>修改昵称</Text>
+                <TouchableWithoutFeedback
+                  onPress={() => handleChange("nickname", nickname)}
+                >
+                  <Text style={styles.bottomSheetDone}>完成</Text>
+                </TouchableWithoutFeedback>
+              </View>
+              <TextInput
+                style={styles.bottomSheetInput}
+                value={nickname}
+                onChangeText={(text) => setNickname(text)}
+              />
             </View>
-            <TextInput
-              style={styles.bottomSheetInput}
-              value={nickname}
-              onChangeText={(text) =>
-                setNickname(text)
-              }
-            />
-          </View>
-        </Modal>
-      )}
+          </Modal>
+        )}
 
         <CityPicker
           visible={bottomSheetVisible === "city"}
           onClose={onClose}
-          onChange={(value) => handleChange('city', value)}
+          onChange={(value) => handleChange("city", value)}
         />
 
         <Select
@@ -194,7 +211,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           onClose={onClose}
           value={profileData.gender}
           options={["男", "女", "保密"]}
-          onChange={(value) => handleChange('gender', value)}
+          onChange={(value) => handleChange("gender", value)}
         />
 
         <Select
@@ -202,7 +219,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           onClose={onClose}
           value={profileData.education}
           options={["本科", "硕士", "博士"]}
-          onChange={(value) => handleChange('education', value)}
+          onChange={(value) => handleChange("education", value)}
         />
 
         <Select
@@ -210,7 +227,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           onClose={onClose}
           value={profileData.monthlyIncome}
           options={["10K以下", "10K-20K", "20K-50K", "50K以上"]}
-          onChange={(value) => handleChange('monthlyIncome', value)}
+          onChange={(value) => handleChange("monthlyIncome", value)}
         />
 
         <Select
@@ -218,7 +235,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           onClose={onClose}
           value={profileData.industry}
           options={["互联网", "金融", "教育", "医疗"]}
-          onChange={(value) => handleChange('industry', value)}
+          onChange={(value) => handleChange("industry", value)}
         />
 
         <Select
@@ -226,7 +243,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           onClose={onClose}
           value={profileData.maritalStatus}
           options={["未婚", "已婚", "离异", "丧偶"]}
-          onChange={(value) => handleChange('maritalStatus', value)}
+          onChange={(value) => handleChange("maritalStatus", value)}
         />
       </ScrollView>
     </View>
