@@ -6,6 +6,7 @@ import LoginScreen from './src/pages/LoginScreen';
 import ProfileScreen from './src/pages/ProfileScreen';
 import DynamicDetailScreen from './src/pages/DynamicDetailScreen';
 import EditProfileScreen from './src/pages/EditProfileScreen';
+import PersonalCircleScreen from './src/pages/PersonalCircleScreen';
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,7 @@ function App() {
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="DynamicDetail" component={DynamicDetailScreen} />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+        <Stack.Screen name="PersonalCircle" component={PersonalCircleScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

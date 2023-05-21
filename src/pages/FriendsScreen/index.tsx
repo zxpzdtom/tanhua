@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, FlatList, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { ListItem, Avatar } from '@rneui/themed';
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Mock from 'mockjs';
 
 const FriendsScreen = () => {
+  const navigation = useNavigation<any>();
   const [isLoading, setIsLoading] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [data, setData] = React.useState([]);
@@ -87,7 +89,9 @@ const FriendsScreen = () => {
   );
 
   const renderItem = ({ item }) => (
-    <ListItem bottomDivider>
+    <ListItem bottomDivider onPress={() => {
+      navigation.navigate('PersonalCircle', { id: item.id });
+    }}>
       <Avatar
         source={{ uri: `https://picsum.photos/200?random=${Math.floor(Math.random() * 1000)}` }}
         size={60}
