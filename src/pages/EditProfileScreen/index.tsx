@@ -15,8 +15,7 @@ import { Header, Avatar, Icon, ListItem, Text } from "@rneui/themed";
 import Select from "../../components/Select";
 import CityPicker from "../../components/CityPicker";
 import DateTimePicker from "../../components/DateTimePicker";
-
-const { height } = Dimensions.get('window');
+import { uploadAvatar } from "../../../service";
 
 const EditProfileScreen = ({ route, navigation }) => {
   const [profileData, setProfileData] = React.useState({
@@ -55,9 +54,14 @@ const EditProfileScreen = ({ route, navigation }) => {
     });
 
     if (result.canceled) return;
-    const avatar = result.assets[0].uri;
-    setProfileData((prevProfileData) => ({ ...prevProfileData, avatar }));
+    const { uri, fileName } = result.assets[0];
+    setProfileData((prevProfileData) => ({ ...prevProfileData, avatar: uri }));
     // 上传头像到服务器
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const formData = new FormData();
+    formData.append('headPhoto', blob, fileName);
+    await uploadAvatar(formData);
   };
 
   return (

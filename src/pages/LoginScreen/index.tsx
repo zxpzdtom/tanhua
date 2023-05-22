@@ -1,11 +1,14 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet, StatusBar, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import { login, sendVerificationCode } from '../../../service';
 
 const LoginScreen = () => {
   const navigation = useNavigation<any>();
-  const [phoneNumber, setPhoneNumber] = React.useState('');
-  const [verificationCode, setVerificationCode] = React.useState('');
+  const [phoneNumber, setPhoneNumber] = React.useState('15882320653');
+  const [verificationCode, setVerificationCode] = React.useState('123456');
   const [buttonColor, setButtonColor] = React.useState('#007AFF');
   const [buttonText, setButtonText] = React.useState('获取验证码');
   const [buttonDisabled, setButtonDisabled] = React.useState(false);
@@ -23,31 +26,58 @@ const LoginScreen = () => {
       setButtonDisabled(false);
       setButtonColor('#007AFF');
       setCountdown(60);
+      clearTimeout(timer)
     }
     return () => clearTimeout(timer);
   }, [countdown, buttonDisabled]);
 
-  const handlePhoneNumberChange = (number) => {
+  const handlePhoneNumberChange = React.useCallback((number: string) => {
     setPhoneNumber(number);
-    if (number.length === 11) {
-      setButtonColor('#007AFF');
-    } else {
+  }, []);
+
+  const handleButtonPress = React.useCallback(async () => {
+    try {
+      if (phoneNumber.length !== 11) {
+        Toast.show({
+          type: ALERT_TYPE.WARNING,
+          title: '提示',
+          textBody: "请输入正确的手机号码",
+        });
+        return;
+      }
+      await sendVerificationCode(phoneNumber);
+      setButtonDisabled(true);
       setButtonColor('#ccc');
+      setButtonText(`重新获取(${countdown})`);
+    } catch (error) {
+      console.log('Failed to send verification code', error);
     }
-  };
+  }, [phoneNumber, countdown]);
 
-  const handleButtonPress = () => {
-    // handle button press logic here
-    setButtonDisabled(true);
-    setButtonText(`重新获取(${countdown})`);
-    setButtonColor('#ccc');
-  };
 
-  const handleLoginPress = () => {
-    // handle login logic here
-    console.log('login');
-    navigation.navigate('Profile');
-  }
+  const handleLoginPress = React.useCallback(async () => {
+    if (!verificationCode) {
+      Toast.show({
+        type: ALERT_TYPE.WARNING,
+        title: '提示',
+        textBody: "请输入验证码",
+      });
+      return;
+    }
+    const res = await login({
+      phone: phoneNumber,
+      verificationCode,
+    });
+    // 保存token
+    await AsyncStorage.setItem('token', res.token);
+
+    console.debug("%c Line:72 🍞 res.token", "color:#ed9ec7", res.token);
+    if (res.isNew) {
+      navigation.navigate('Profile');
+    } else {
+      navigation.navigate('Main');
+    }
+  }, [navigation, phoneNumber, verificationCode]);
 
   return (
     <View style={styles.container}>

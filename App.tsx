@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertNotificationRoot } from 'react-native-alert-notification';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import MainTabScreen from './src/pages/MainTabScreen';
@@ -12,21 +13,23 @@ const Stack = createStackNavigator();
 
 function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false
-        }}
-        initialRouteName="Login"
-      >
-        <Stack.Screen name="Main" component={MainTabScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
-        <Stack.Screen name="DynamicDetail" component={DynamicDetailScreen} />
-        <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-        <Stack.Screen name="PersonalCircle" component={PersonalCircleScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <AlertNotificationRoot>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false
+          }}
+          initialRouteName="Login"
+        >
+          <Stack.Screen name="Main" component={MainTabScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="DynamicDetail" component={DynamicDetailScreen} />
+          <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+          <Stack.Screen name="PersonalCircle" component={PersonalCircleScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AlertNotificationRoot>
   );
 }
 

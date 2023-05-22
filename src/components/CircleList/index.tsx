@@ -2,105 +2,97 @@ import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Icon } from '@rneui/themed';
-import Mock from 'mockjs';
+import { getFriendsMomentList, getRecommendationMomentList } from '../../../service';
+import { RecommendationMomentListItem } from '../../../types';
+import Empty from '../Empty';
 
 const Separator = () => <View style={styles.separator} />;
 
-const CircleList = () => {
+interface CircleListProps {
+  type: 'recommendation' | 'friend';
+}
+
+const CircleList: React.FC<CircleListProps> = (props) => {
   const navigation = useNavigation<any>();
-  const [dataList, setDataList] = React.useState([]);
+  const [data, setData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const [page, setPage] = React.useState(1);
+  const pageRef = React.useRef(1);
 
-  React.useEffect(() => {
-    fetchData();
-  }, []);
+  let api = getRecommendationMomentList;
+  if (props.type === 'friend') {
+    api = getFriendsMomentList;
+  }
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: { item: RecommendationMomentListItem }) => (
     <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('DynamicDetail', {
       id: item.id,
     })}>
       <View style={styles.left}>
-        <Image source={{ uri: `https://picsum.photos/200?random=${Math.floor(Math.random() * 1000)}` }} style={styles.avatar} />
+        <Image source={{ uri: item.avatar }} style={styles.avatar} />
       </View>
       <View style={styles.right}>
         <View style={styles.header}>
           <Text style={styles.nickname}>{item.nickname}</Text>
-          <Text style={styles.time}>{item.time}</Text>
+          <Text style={styles.time}>{item.createDate}</Text>
         </View>
         <Text numberOfLines={3} ellipsizeMode="tail" style={styles.text}>
-          {item.text}
+          {item.textContent}
         </Text>
         <View style={styles.images}>
-          {item.images.map((image) => (
-            <Image source={{ uri: `https://picsum.photos/200?random=${Math.floor(Math.random() * 1000)}` }} style={styles.image} />
+          {item.imageContent.map((image) => (
+            <Image source={{ uri: image }} style={styles.image} />
           ))}
         </View>
         <View style={styles.footer}>
           <View style={styles.iconContainer}>
             <Icon name="thumbs-up" type="feather" size={16} color="#999" />
-            <Text style={styles.iconText}>{item.likes}</Text>
+            <Text style={styles.iconText}>{item.likeCount || 0}</Text>
           </View>
           <View style={styles.iconContainer}>
             <Icon name="message-square" type="feather" size={16} color="#999" />
-            <Text style={styles.iconText}>{item.comments}</Text>
+            <Text style={styles.iconText}>{item.commentCount || 0}</Text>
           </View>
         </View>
       </View>
     </TouchableOpacity>
   );
 
-  const fetchData = () => {
-    const mockData = Mock.mock({
-      'list|20': [
-        {
-          'id': '@guid',
-          'avatar': '@image(50x50)',
-          'nickname': '@cname',
-          'text': '@cparagraph(1, 6)',
-          'images|0-9': ['@image(150x150)'],
-          'distance': '@float(0, 10, 1, 1)km',
-          'time': '@now',
-          'likes': '@integer(0, 100)',
-          'comments': '@integer(0, 50)',
-        }
-      ]
-    }).list;
-    setIsLoading(true);
-    setTimeout(() => {
-      if (page === 1) {
-        setDataList(mockData);
-      } else {
-        setDataList([...dataList, ...mockData]);
-      }
-      setPage(page + 1);
+  const handleLoadMore = async () => {
+    try {
+      if (isLoading) return;
+      if (pageRef.current > 1 && data.length === 0) return;
+      setIsLoading(true);
+      const res = await api({ page: pageRef.current, pagesize: 10 });
+      pageRef.current += 1;
+      if (!res) return;
+      setData([...data, ...res.items]);
+    } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
-    }, 1000);
+    }
   };
 
-  const handleRefresh = () => {
+
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    setPage(1);
-    fetchData();
-  };
-
-  const handleLoadMore = () => {
-    fetchData();
+    const res = await api({ page: 1, pagesize: 10 });
+    pageRef.current = 2;
+    setData(res.items);
+    setIsRefreshing(false);
   };
 
   return (
     <FlatList
-      data={dataList}
+      data={data}
       renderItem={renderItem}
-      keyExtractor={(item) => item.id.toString()}
+      keyExtractor={(item) => item.id}
       ItemSeparatorComponent={Separator}
       contentContainerStyle={styles.list}
       onRefresh={handleRefresh}
       refreshing={isRefreshing}
       onEndReached={handleLoadMore}
-      onEndReachedThreshold={0.5}
+      onEndReachedThreshold={0.1}
+      ListEmptyComponent={<Empty />}
       ListFooterComponent={
         isLoading ? (
           <View style={styles.loading}>

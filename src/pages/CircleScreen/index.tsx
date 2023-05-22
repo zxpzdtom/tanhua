@@ -10,14 +10,14 @@ const CircleScreen = () => {
     <View style={styles.container}>
       <Tab value={activeIndex} onChange={setActiveIndex}>
         <Tab.Item title="推荐" />
-        <Tab.Item title="最新" />
+        <Tab.Item title="好友" />
       </Tab>
       <TabView value={activeIndex} onChange={setActiveIndex}>
         <TabView.Item style={styles.container}>
-          <CircleList />
+          <CircleList type="recommendation" />
         </TabView.Item>
         <TabView.Item style={styles.container}>
-          <CircleList />
+          <CircleList type="friend" />
         </TabView.Item>
       </TabView>
     </View>

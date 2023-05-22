@@ -3,90 +3,81 @@ import { View, FlatList, Text, StyleSheet, ActivityIndicator } from 'react-nativ
 import { ListItem, Avatar } from '@rneui/themed';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import Mock from 'mockjs';
+import { useRequest } from 'ahooks';
+import { getRecommendationList, getTodayBest } from '../../../service';
 
 const FriendsScreen = () => {
   const navigation = useNavigation<any>();
   const [isLoading, setIsLoading] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [data, setData] = React.useState([]);
+  const pageRef = React.useRef(1);
+  const todayBestReq = useRequest(getTodayBest);
 
-  const handleLoadMore = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      const newData = Mock.mock({
-        'data|10': [
-          {
-            id: '@guid',
-            name: '@name',
-            age: '@integer(20, 50)',
-            maritalStatus: '@pick(["单身", "离异", "已婚"])',
-            education: '@pick(["大专", "本科", "硕士"])',
-            gender: '@pick(["男", "女"])',
-            score: '@integer(60, 100)',
-          },
-        ],
-      }).data;
-      setData([...data, ...newData]);
+  const handleLoadMore = async () => {
+    try {
+      if (isLoading) return;
+      setIsLoading(true);
+      const res = await getRecommendationList({ page: pageRef.current, pagesize: 10 });
+      pageRef.current += 1;
+      if (!res) return;
+      setData([...data, ...res.items]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    setTimeout(() => {
-      const newData = Mock.mock({
-        'data|10': [
-          {
-            id: '@guid',
-            name: '@name',
-            age: '@integer(20, 50)',
-            maritalStatus: '@pick(["单身", "离异", "已婚"])',
-            education: '@pick(["大专", "本科", "硕士"])',
-            gender: '@pick(["男", "女"])',
-            score: '@integer(60, 100)',
-          },
-        ],
-      }).data;
-      setData(newData);
-      setIsRefreshing(false);
-    }, 1000);
+    const res = await getRecommendationList({ page: 1, pagesize: 10 });
+    pageRef.current = 2;
+    setData(res.items);
+    setIsRefreshing(false);
   };
 
-  const renderHeader = () => (
-    <View style={styles.headerContainer}>
-      <ListItem containerStyle={styles.headerCard}>
-        <Avatar
-          source={{ uri: `https://picsum.photos/200?random=${Math.floor(Math.random() * 1000)}` }}
-          size={120}
-          containerStyle={styles.headerAvatar}
-        />
-        <View style={styles.todayLabel}>
-          <Text style={styles.todayLabelText}>今日佳人</Text>
-        </View>
-        <ListItem.Content style={{ marginLeft: 100 }}>
-          <View style={styles.nameContainer}>
-            <Text style={styles.name}>张三</Text>
-            <Icon name="mars" size={24} color="#007aff" style={styles.genderIcon} />
+  const renderHeader = () => {
+    const todayBestData = todayBestReq.data;
+    if (!todayBestData) return null;
+    const isMan = todayBestData.gender === 'man';
+    return (
+      <View style={styles.headerContainer}>
+        <ListItem containerStyle={styles.headerCard}>
+          <Avatar
+            source={{ uri: todayBestData.avatar }}
+            size={120}
+            containerStyle={styles.headerAvatar}
+          />
+          <View style={styles.todayLabel}>
+            <Text style={styles.todayLabelText}>今日佳人</Text>
           </View>
-          <View style={styles.subtitle}>
-            <Text style={styles.subtitleText}>25 岁</Text>
-            <Text style={styles.subtitleDivider}> | </Text>
-            <Text style={styles.subtitleText}>单身</Text>
-            <Text style={styles.subtitleDivider}> | </Text>
-            <Text style={styles.subtitleText}>本科</Text>
+          <ListItem.Content style={{ marginLeft: 90 }}>
+            <View style={styles.nameContainer}>
+              <Text style={styles.name}>{todayBestData.nickname}</Text>
+              <Icon name={isMan ? 'mars' : 'venus'} size={24} color={isMan ? '#007aff' : '#ff2d55'} style={styles.genderIcon} />
+            </View>
+            <View style={styles.subtitle}>
+              <Text style={styles.subtitleText}>{todayBestData.age} 岁</Text>
+              {
+                todayBestData.tags?.map((tag) => (
+                  <>
+                     <Text style={styles.subtitleDivider}> | </Text>
+                     <Text style={styles.subtitleText}>{tag}</Text>
+                  </>
+                ))
+              }
+            </View>
+          </ListItem.Content>
+          <View>
+            <View style={styles.scoreContainer}>
+              <Icon name="heart" size={32} color="red" style={styles.heartIcon} />
+              <Text style={styles.score}>{todayBestData.fateValue}</Text>
+            </View>
+            <Text style={styles.scoreLabel}>缘分值</Text>
           </View>
-        </ListItem.Content>
-        <View>
-          <View style={styles.scoreContainer}>
-            <Icon name="heart" size={32} color="red" style={styles.heartIcon} />
-            <Text style={styles.score}>{85}</Text>
-          </View>
-          <Text style={styles.scoreLabel}>缘分值</Text>
-        </View>
-      </ListItem>
-    </View>
-  );
+        </ListItem>
+      </View>
+    )
+  };
 
   const renderItem = ({ item }) => (
     <ListItem bottomDivider onPress={() => {
@@ -99,27 +90,27 @@ const FriendsScreen = () => {
       />
       <ListItem.Content>
         <View style={styles.nameContainer}>
-          <ListItem.Title style={styles.name}>{item.name}</ListItem.Title>
+          <ListItem.Title style={styles.name}>{item.nickname}</ListItem.Title>
           <Icon name={item.gender === '男' ? 'mars' : 'venus'} size={24} color={item.gender === '男' ? '#007aff' : '#ff2d55'} style={styles.genderIcon} />
         </View>
         <ListItem.Subtitle style={styles.subtitle}>
           <Text style={styles.subtitleText}>{item.age} 岁</Text>
-          <Text style={styles.subtitleDivider}> | </Text>
-          <Text style={styles.subtitleText}>{item.maritalStatus}</Text>
-          <Text style={styles.subtitleDivider}> | </Text>
-          <Text style={styles.subtitleText}>{item.education}</Text>
+          {
+              item.tags?.map((tag) => (
+                <>
+                    <Text style={styles.subtitleDivider}> | </Text>
+                    <Text style={styles.subtitleText}>{tag}</Text>
+                </>
+              ))
+            }
         </ListItem.Subtitle>
       </ListItem.Content>
       <View style={styles.scoreContainer}>
         <Icon name="heart" size={32} color="red" style={styles.heartIcon} />
-        <Text style={styles.score}>{item.score}</Text>
+        <Text style={styles.score}>{item.fateValue}</Text>
       </View>
     </ListItem>
   );
-
-  React.useEffect(() => {
-    handleRefresh();
-  }, []);
 
   return (
     <FlatList
@@ -127,7 +118,7 @@ const FriendsScreen = () => {
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
       onEndReached={handleLoadMore}
-      onEndReachedThreshold={0.5}
+      onEndReachedThreshold={0.1}
       refreshing={isRefreshing}
       onRefresh={handleRefresh}
       ListFooterComponent={
@@ -195,7 +186,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   subtitleText: {
-    fontSize: 16,
+    fontSize: 12,
   },
   subtitleDivider: {
     fontSize: 16,
@@ -212,9 +203,9 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     color: 'red',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
-    marginTop: 8,
+    marginTop: 4,
   },
   score: {
     color: '#fff',

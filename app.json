@@ -18,7 +18,10 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "使用相机拍摄头像",
-        "NSPhotoLibraryUsageDescription": "访问相册选择头像"
+        "NSPhotoLibraryUsageDescription": "访问相册选择头像",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       }
     },
     "android": {
@@ -28,7 +31,9 @@
       },
       "permissions": [
         "CAMERA",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET",
+        "http://p4ho3bab.dongtaiyuming.net"
       ]
     },
     "web": {

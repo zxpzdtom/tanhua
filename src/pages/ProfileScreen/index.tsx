@@ -6,28 +6,40 @@ import { Avatar, ListItem } from '@rneui/themed';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CityPicker from '../../components/CityPicker';
 import DateTimePicker from '../../components/DateTimePicker';
+import { saveProfile } from '../../../service';
 
 const ProfileScreen = () => {
   const navigation = useNavigation<any>();
-  const [gender, setGender] = React.useState('male');
+  const [gender, setGender] = React.useState<'man' | 'woman'>('man');
   const [name, setName] = React.useState('');
   const [birthday, setBirthday] = React.useState(new Date());
-  const [city, setCity] = React.useState();
+  const [city, setCity] = React.useState('');
   const [pickerVisible, setPickerVisible] = React.useState(false);
   const [datePickerVisible, setDatePickerVisible] = React.useState(false);
 
-  const handleOpenPicker = () => {
+  const handleOpenPicker = React.useCallback(() => {
     setPickerVisible(true);
-  };
+  }, []);
 
-  const handleClosePicker = () => {
+  const handleClosePicker = React.useCallback(() => {
     setPickerVisible(false);
-  };
+  }, []);
 
-  const handleCityChange = (val) => {
+  const handleCityChange = React.useCallback((val: string) => {
     setCity(val);
     setPickerVisible(false);
-  }
+  }, []);
+
+  const handleSubmit = React.useCallback(async () => {
+    await saveProfile({
+      gender,
+      birthday: dayjs(birthday).format('YYYY-MM-DD'),
+      city,
+      header: '',
+      nickname: name,
+    });
+    navigation.navigate('Main');
+  }, [navigation])
 
   return (
     <View style={styles.container}>
@@ -36,26 +48,26 @@ const ProfileScreen = () => {
         <Text style={styles.subTitle}>提升我的魅力</Text>
       </View>
       <View style={styles.avatarContainer}>
-        <TouchableOpacity onPress={() => setGender('male')}>
+        <TouchableOpacity onPress={() => setGender('man')}>
           <Avatar
             rounded
             size="large"
             source={require('../../../assets/male.png')}
-            overlayContainerStyle={{ backgroundColor: gender === 'male' ? 'blue' : 'gray' }}
+            overlayContainerStyle={{ backgroundColor: gender === 'man' ? 'blue' : 'gray' }}
           />
           <ListItem.Content>
-            <ListItem.Title style={[styles.avatarTitle, { color: gender === 'male' ? 'blue' : 'gray' }]}>男生</ListItem.Title>
+            <ListItem.Title style={[styles.avatarTitle, { color: gender === 'man' ? 'blue' : 'gray' }]}>男生</ListItem.Title>
           </ListItem.Content>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setGender('female')}>
+        <TouchableOpacity onPress={() => setGender('woman')}>
           <Avatar
             rounded
             size="large"
             source={require('../../../assets/female.png')}
-            overlayContainerStyle={{ backgroundColor: gender === 'female' ? 'pink' : 'gray' }}
+            overlayContainerStyle={{ backgroundColor: gender === 'woman' ? 'pink' : 'gray' }}
           />
           <ListItem.Content>
-            <ListItem.Title style={[styles.avatarTitle, { color: gender === 'female' ? 'pink' : 'gray' }]}>女生</ListItem.Title>
+            <ListItem.Title style={[styles.avatarTitle, { color: gender === 'woman' ? 'pink' : 'gray' }]}>女生</ListItem.Title>
           </ListItem.Content>
         </TouchableOpacity>
       </View>
@@ -106,9 +118,7 @@ const ProfileScreen = () => {
           </ListItem>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.submitButton} onPress={() => {
-        navigation.navigate('Main');
-      }}>
+      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
         <View style={[styles.submitButtonContainer, { width: '100%' }]}>
           <Text style={styles.submitButtonText}>提 交</Text>
         </View>
