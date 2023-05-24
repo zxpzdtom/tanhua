@@ -1,4 +1,4 @@
-import { LoginRequest, LoginResponse, MomentCommentsParams, MomentCommentsResponse, RecommendationListRequest, RecommendationListResponse, RecommendationMomentListItem, RecommendationMomentListRequest, RecommendationMomentListResponse, SaveProfileRequest, TodayBestResponse, UserInfoResponse } from "../types";
+import { LoginRequest, LoginResponse, MomentCommentsParams, MomentCommentsResponse, RecommendationListRequest, RecommendationListResponse, RecommendationMomentListItem, RecommendationMomentListRequest, RecommendationMomentListResponse, SaveProfileRequest, TodayBestResponse, UserInfoResponse, UserMomentsParams } from "../types";
 import request from "./request";
 
 export async function sendVerificationCode(phone: string) {
@@ -88,15 +88,18 @@ export async function getCurrentUserInfo(): Promise<UserInfoResponse> {
 }
 
 // 保存个人资料
-export async function saveUserInfo(params: Partial<UserInfoResponse>): Promise<number> {
-  return request.get('/personalCentral/savaUserInfo', {
-    params,
-  });
+export async function saveUserInfo(data: Partial<UserInfoResponse>): Promise<number> {
+  return request.post('/personalCentral/saveUserInfo', data);
 }
 
 // 我的粉丝列表
 export async function getMyFollowers(): Promise<RecommendationListResponse> {
   return request.get('/personalCentral/queryMyFollowers');
+}
+
+// 我的喜欢列表
+export async function getMyLikers(): Promise<RecommendationMomentListResponse> {
+  return request.get('/personalCentral/queryLikeInfos');
 }
 
 // 我的关注列表
@@ -106,5 +109,21 @@ export async function getMyFollowings(): Promise<RecommendationListResponse> {
 
 // 我的动态列表
 export async function getMyMoments(): Promise<RecommendationMomentListResponse> {
-  return request.get('/queryMyMovements');
+  return request.get('/personalCentral/queryMyMovements');
+}
+
+// 获取某个用户的动态列表
+export async function getUserMoments(params: UserMomentsParams): Promise<RecommendationMomentListResponse> {
+  return request.get('personalCentral/queryAppointUserMovements', {
+    params,
+  });
+}
+
+// 发布动态
+export async function publishMoment(data: FormData): Promise<null> {
+  return request.post('/movements', data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    }
+  });
 }

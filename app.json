@@ -6,6 +6,14 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "需要访问您的位置以提供更好的服务"
+        }
+      ]
+    ],
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -19,6 +27,7 @@
       "infoPlist": {
         "NSCameraUsageDescription": "使用相机拍摄头像",
         "NSPhotoLibraryUsageDescription": "访问相册选择头像",
+        "NSLocationWhenInUseUsageDescription": "需要访问您的位置以提供更好的服务",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         }
@@ -31,8 +40,8 @@
       },
       "permissions": [
         "CAMERA",
-        "WRITE_EXTERNAL_STORAGE",
         "INTERNET",
+        "ACCESS_COARSE_LOCATION",
         "http://p4ho3bab.dongtaiyuming.net"
       ]
     },

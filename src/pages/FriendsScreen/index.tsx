@@ -3,6 +3,7 @@ import { View, FlatList, Text, StyleSheet } from "react-native";
 import { ListItem, Avatar, Header, Icon } from "@rneui/themed";
 import { getMyFollowers, getMyFollowings } from "../../../service";
 import { useRequest } from "ahooks";
+import Empty from "../../components/Empty";
 
 const FriendsScreen = ({ route, navigation }) => {
   const { title } = route.params;
@@ -20,17 +21,16 @@ const FriendsScreen = ({ route, navigation }) => {
     >
       <Avatar
         source={{
-          uri: `https://picsum.photos/200?random=${Math.floor(
-            Math.random() * 1000
-          )}`,
+          uri: item.logo,
         }}
         size={60}
         rounded
       />
       <ListItem.Content>
         <View style={styles.nameContainer}>
-          <ListItem.Title style={styles.name}>{item.nickname}</ListItem.Title>
+          <ListItem.Title style={styles.name}>{item.nickName}</ListItem.Title>
           <Icon
+            type="font-awesome"
             name={item.gender === "男" ? "mars" : "venus"}
             size={24}
             color={item.gender === "男" ? "#007aff" : "#ff2d55"}
@@ -39,7 +39,7 @@ const FriendsScreen = ({ route, navigation }) => {
         </View>
         <ListItem.Subtitle style={styles.subtitle}>
           <Text style={styles.subtitleText}>{item.age} 岁</Text>
-          {item.tags?.map((tag) => (
+          {item.tags?.split(",")?.map?.((tag) => (
             <>
               <Text style={styles.subtitleDivider}> | </Text>
               <Text style={styles.subtitleText}>{tag}</Text>
@@ -48,12 +48,17 @@ const FriendsScreen = ({ route, navigation }) => {
         </ListItem.Subtitle>
       </ListItem.Content>
       <View style={styles.scoreContainer}>
-        <Icon name="heart" size={32} color="red" style={styles.heartIcon} />
+        <Icon
+          type="font-awesome"
+          name="heart"
+          size={32}
+          color="red"
+          style={styles.heartIcon}
+        />
         <Text style={styles.score}>{item.fateValue}</Text>
       </View>
     </ListItem>
   );
-
   return (
     <View>
       <Header
@@ -76,6 +81,7 @@ const FriendsScreen = ({ route, navigation }) => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         onEndReachedThreshold={0.1}
+        ListEmptyComponent={<Empty />}
       />
     </View>
   );
@@ -136,7 +142,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   subtitleDivider: {
-    fontSize: 16,
+    fontSize: 12,
     color: "#999",
   },
   scoreContainer: {

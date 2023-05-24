@@ -1,17 +1,19 @@
-import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Avatar, Icon, Text, Button } from '@rneui/themed';
-import { useRequest } from 'ahooks';
-import { getCurrentUserInfo } from '../../../service';
+import React from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { Avatar, Icon, Text, Button } from "@rneui/themed";
+import { useRequest } from "ahooks";
+import { getCurrentUserInfo } from "../../../service";
 
 const MyScreen = () => {
   const navigation = useNavigation<any>();
 
-  const { data } = useRequest(getCurrentUserInfo);
+  const { data } = useRequest(getCurrentUserInfo, {
+    refreshOnWindowFocus: true,
+  });
 
   const handleEditProfile = React.useCallback(() => {
-    navigation.navigate('EditProfile');
+    navigation.navigate("EditProfile");
   }, []);
 
   return (
@@ -28,7 +30,7 @@ const MyScreen = () => {
           <Text h4>{data?.nickName}</Text>
           <View style={styles.row}>
             <Icon name="gender-male" type="material-community" size={16} />
-            <Text style={styles.label}>{data?.sex === 'MAN' ? '男' : '女'}</Text>
+            <Text style={styles.label}>{data?.sex}</Text>
             <Icon name="cake" type="material-community" size={16} />
             <Text style={styles.label}>{data?.age}</Text>
             <Icon name="map-marker" type="font-awesome" size={16} />
@@ -37,15 +39,26 @@ const MyScreen = () => {
         </View>
       </View>
       <View style={styles.card}>
-        <TouchableOpacity style={styles.stat} onPress={() => navigation.navigate('Friends', { title: "我的关注" })}>
+        <TouchableOpacity
+          style={styles.stat}
+          onPress={() => navigation.navigate("Friends", { title: "我的关注" })}
+        >
           <Text style={styles.statValue}>{data?.starCounts || 0}</Text>
           <Text style={styles.statLabel}>我的关注</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.stat} onPress={() => navigation.navigate('Friends', { title: "我的喜欢" })}>
+        <TouchableOpacity
+          style={styles.stat}
+          onPress={() =>
+            navigation.navigate("PersonalCircle", { title: "我的喜欢" })
+          }
+        >
           <Text style={styles.statValue}>{data?.likeCounts || 0}</Text>
           <Text style={styles.statLabel}>喜欢</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.stat} onPress={() => navigation.navigate('Friends', { title: "我的粉丝" })}>
+        <TouchableOpacity
+          style={styles.stat}
+          onPress={() => navigation.navigate("Friends", { title: "我的粉丝" })}
+        >
           <Text style={styles.statValue}>{data?.fanCounts || 0}</Text>
           <Text style={styles.statLabel}>粉丝</Text>
         </TouchableOpacity>
@@ -55,19 +68,35 @@ const MyScreen = () => {
           <Icon name="account-outline" type="material-community" size={24} />
           <Text style={styles.itemLabel}>个人信息</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('PersonalCircle', { title: "我的动态" })}>
-          <Icon name="newspaper-variant-outline" type="material-community" size={24} />
+        <TouchableOpacity
+          style={styles.item}
+          onPress={() =>
+            navigation.navigate("PersonalCircle", { title: "我的动态" })
+          }
+        >
+          <Icon
+            name="newspaper-variant-outline"
+            type="material-community"
+            size={24}
+          />
           <Text style={styles.itemLabel}>我的动态</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.item} onPress={() => {
-          navigation.navigate('Customer');
-        }}>
+        <TouchableOpacity
+          style={styles.item}
+          onPress={() => {
+            navigation.navigate("Customer");
+          }}
+        >
           <Icon name="headset" type="material-community" size={24} />
           <Text style={styles.itemLabel}>客服在线</Text>
         </TouchableOpacity>
-        <Button title="退出登录" onPress={() => {
-          navigation.navigate('Login');
-        }} buttonStyle={styles.logoutButton} />
+        <Button
+          title="退出登录"
+          onPress={() => {
+            navigation.navigate("Login");
+          }}
+          buttonStyle={styles.logoutButton}
+        />
       </View>
     </View>
   );
@@ -76,61 +105,61 @@ const MyScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   profile: {
     height: 200,
-    backgroundColor: '#03A9F4',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#03A9F4",
+    alignItems: "center",
+    justifyContent: "center",
   },
   background: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: "rgba(255,255,255,0.2)",
   },
   avatar: {
     borderWidth: 3,
-    borderColor: '#fff',
+    borderColor: "#fff",
     marginBottom: 10,
   },
   info: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   label: {
     marginLeft: 5,
     marginRight: 10,
   },
   card: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     paddingVertical: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
   },
   stat: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   statValue: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 5,
   },
   statLabel: {
-    color: '#999',
+    color: "#999",
   },
   list: {
     marginTop: 20,
   },
   item: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 15,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
     paddingHorizontal: 20,
   },
   itemLabel: {
@@ -139,7 +168,7 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     margin: 30,
-    backgroundColor: '#F44336',
+    backgroundColor: "#F44336",
   },
 });
 

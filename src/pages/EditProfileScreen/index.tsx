@@ -119,7 +119,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           <ListItem.Content>
             <ListItem.Title>性别</ListItem.Title>
           </ListItem.Content>
-          <Text>{data?.sex === "MAN" ? "男" : "女"}</Text>
+          <Text>{data?.sex}</Text>
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
@@ -169,12 +169,16 @@ const EditProfileScreen = ({ route, navigation }) => {
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
-        <DateTimePicker
-          visible={bottomSheetVisible === "birthday"}
-          value={data?.birthday ? new Date(data?.birthday) : undefined}
-          onClose={onClose}
-          onChange={(date) => handleChange("birthday", date)}
-        />
+        {bottomSheetVisible === "birthday" && (
+          <DateTimePicker
+            visible
+            value={new Date(data?.birthday)}
+            onClose={onClose}
+            onChange={(date) =>
+              handleChange("birthday", dayjs(date).format("YYYY-MM-DD"))
+            }
+          />
+        )}
 
         {bottomSheetVisible === "nickName" && (
           <Modal animationType="slide" visible>

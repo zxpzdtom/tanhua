@@ -6,11 +6,10 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import { ListItem, Avatar } from "@rneui/themed";
-import { useNavigation } from "@react-navigation/native";
-import Icon from "react-native-vector-icons/FontAwesome";
+import { ListItem, Avatar, Icon } from "@rneui/themed";
 import { useRequest } from "ahooks";
 import { getRecommendationList, getTodayBest } from "../../../service";
+import { useNavigation } from "@react-navigation/native";
 
 const FriendsScreen = () => {
   const navigation = useNavigation<any>();
@@ -67,6 +66,7 @@ const FriendsScreen = () => {
             <View style={styles.nameContainer}>
               <Text style={styles.name}>{todayBestData.nickname}</Text>
               <Icon
+                type="font-awesome"
                 name={isMan ? "mars" : "venus"}
                 size={24}
                 color={isMan ? "#007aff" : "#ff2d55"}
@@ -86,6 +86,7 @@ const FriendsScreen = () => {
           <View>
             <View style={styles.scoreContainer}>
               <Icon
+                type="font-awesome"
                 name="heart"
                 size={32}
                 color="red"
@@ -109,9 +110,7 @@ const FriendsScreen = () => {
     >
       <Avatar
         source={{
-          uri: `https://picsum.photos/200?random=${Math.floor(
-            Math.random() * 1000
-          )}`,
+          uri: item.avatar,
         }}
         size={60}
         rounded
@@ -120,6 +119,7 @@ const FriendsScreen = () => {
         <View style={styles.nameContainer}>
           <ListItem.Title style={styles.name}>{item.nickname}</ListItem.Title>
           <Icon
+            type="font-awesome"
             name={item.gender === "男" ? "mars" : "venus"}
             size={24}
             color={item.gender === "男" ? "#007aff" : "#ff2d55"}
@@ -128,7 +128,7 @@ const FriendsScreen = () => {
         </View>
         <ListItem.Subtitle style={styles.subtitle}>
           <Text style={styles.subtitleText}>{item.age} 岁</Text>
-          {item.tags?.map((tag) => (
+          {item.tags?.map?.((tag) => (
             <>
               <Text style={styles.subtitleDivider}> | </Text>
               <Text style={styles.subtitleText}>{tag}</Text>
@@ -137,7 +137,13 @@ const FriendsScreen = () => {
         </ListItem.Subtitle>
       </ListItem.Content>
       <View style={styles.scoreContainer}>
-        <Icon name="heart" size={32} color="red" style={styles.heartIcon} />
+        <Icon
+          type="font-awesome"
+          name="heart"
+          size={32}
+          color="red"
+          style={styles.heartIcon}
+        />
         <Text style={styles.score}>{item.fateValue}</Text>
       </View>
     </ListItem>

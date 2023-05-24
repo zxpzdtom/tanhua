@@ -182,6 +182,7 @@ export interface UserInfoResponse {
   logo: string;
   tags: string;
   sex: string;
+  gender: string;
   age: number;
   edu: string;
   city: string;
@@ -193,4 +194,8 @@ export interface UserInfoResponse {
   starCounts: number;
   likeCounts: number;
   fanCounts: number;
+}
+
+export interface UserMomentsParams {
+  userId: number;
 }

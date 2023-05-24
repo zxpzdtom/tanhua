@@ -6,7 +6,10 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker, {
+  DateTimePickerAndroid,
+} from "@react-native-community/datetimepicker";
+import { Platform } from "react-native";
 
 interface DateTimePickerModalProps {
   visible: boolean;
@@ -34,6 +37,21 @@ const DateTimePickerModal: React.FC<DateTimePickerModalProps> = ({
     onChange(internalValue);
     onClose();
   };
+
+  React.useEffect(() => {
+    if (visible && Platform.OS === "android") {
+      DateTimePickerAndroid.open({
+        value: internalValue,
+        onChange: (event, date) => {
+          onChange(date);
+          onClose();
+        },
+        mode,
+      });
+    }
+  }, [visible]);
+
+  if (Platform.OS === "android") return null;
 
   return (
     <Modal animationType="slide" visible={visible} transparent>

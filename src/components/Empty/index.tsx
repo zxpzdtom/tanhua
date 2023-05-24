@@ -1,13 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ViewStyle, StyleProp } from "react-native";
 import { Icon } from "@rneui/themed";
 
 interface EmptyProps {
   type?: "no_data" | "network_error";
   onPress?: () => void;
+  style?: ViewStyle;
 }
 
-const Empty: React.FC<EmptyProps> = ({ type = "no_data", onPress }) => {
+const Empty: React.FC<EmptyProps> = ({ type = "no_data", onPress, style }) => {
   let iconName: string, text: string;
   switch (type) {
     case "no_data":
@@ -25,7 +26,12 @@ const Empty: React.FC<EmptyProps> = ({ type = "no_data", onPress }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={{
+        ...styles.container,
+        ...style,
+      }}
+    >
       <Icon name={iconName} type="feather" size={100} color="#999" />
       <Text style={styles.text}>{text}</Text>
       {onPress && (
@@ -39,6 +45,7 @@ const Empty: React.FC<EmptyProps> = ({ type = "no_data", onPress }) => {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: "40%",
     flex: 1,
     justifyContent: "center",
     alignItems: "center",

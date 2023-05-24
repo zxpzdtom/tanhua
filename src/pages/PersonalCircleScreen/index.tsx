@@ -1,53 +1,73 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  FlatList,
+} from "react-native";
 import { Header, Icon } from "@rneui/themed";
 import { useRequest } from "ahooks";
-import { getMyMoments } from "../../../service";
+import { getMyLikers, getMyMoments, getUserMoments } from "../../../service";
 import { RecommendationMomentListItem } from "../../../types";
+import Empty from "../../components/Empty";
 
 const Separator = () => <View style={styles.separator} />;
 
-const renderItem = ({ item }: { item: RecommendationMomentListItem }) => (
-  <View>
-    <View style={styles.item}>
-      <View style={styles.left}>
-        <Image
-          source={{
-            uri: `https://picsum.photos/200?random=${Math.floor(
-              Math.random() * 1000
-            )}`,
-          }}
-          style={styles.avatar}
-        />
-      </View>
-      <View style={styles.right}>
-        <View style={styles.header}>
-          <Text style={styles.nickname}>{item.nickname}</Text>
-          <Text style={styles.time}>{item.createDate}</Text>
-        </View>
-        <Text numberOfLines={3} ellipsizeMode="tail" style={styles.text}>
-          {item.textContent}
-        </Text>
-        <View style={styles.images}>
-          {item.imageContent.map((image, index) => (
-            <Image
-              key={index}
-              source={{
-                uri: image,
-              }}
-              style={styles.image}
-            />
-          ))}
-        </View>
-      </View>
-    </View>
-  </View>
-);
-
 const PersonalCircleScreen = ({ route, navigation }) => {
   const { id, title } = route.params;
-  // const {} = useRequest(title === '我的动态' ? getMyMoments : () => {})
-  const { data } = useRequest(getMyMoments);
+  // 某个用户的动态
+  let api = () => getUserMoments({ userId: id });
+  // 我的动态
+  if (title === "我的动态") {
+    api = getMyMoments;
+  } else if (title === "我的喜欢") {
+    // 我的喜欢
+    api = getMyLikers;
+  }
+  const { data } = useRequest(api);
+
+  const renderItem = ({ item }: { item: RecommendationMomentListItem }) => (
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate("DynamicDetail", {
+          id: item.id,
+        })
+      }
+    >
+      <View style={styles.item}>
+        <View style={styles.left}>
+          <Image
+            source={{
+              uri: item.avatar,
+            }}
+            style={styles.avatar}
+          />
+        </View>
+        <View style={styles.right}>
+          <View style={styles.header}>
+            <Text style={styles.nickname}>{item.nickname}</Text>
+            <Text style={styles.time}>{item.createDate}</Text>
+          </View>
+          <Text numberOfLines={3} ellipsizeMode="tail" style={styles.text}>
+            {item.textContent}
+          </Text>
+          <View style={styles.images}>
+            {item.imageContent?.map((image, index) => (
+              <Image
+                key={index}
+                source={{
+                  uri: image,
+                }}
+                style={styles.image}
+              />
+            ))}
+          </View>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
@@ -72,6 +92,7 @@ const PersonalCircleScreen = ({ route, navigation }) => {
         keyboardDismissMode="on-drag"
         keyExtractor={(item) => item.id}
         ItemSeparatorComponent={Separator}
+        ListEmptyComponent={<Empty />}
       />
     </View>
   );
