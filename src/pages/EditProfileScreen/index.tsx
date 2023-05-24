@@ -9,35 +9,31 @@ import {
   Modal,
   TouchableWithoutFeedback,
   TextInput,
-  Dimensions,
 } from "react-native";
 import { Header, Avatar, Icon, ListItem, Text } from "@rneui/themed";
 import Select from "../../components/Select";
 import CityPicker from "../../components/CityPicker";
 import DateTimePicker from "../../components/DateTimePicker";
-import { uploadAvatar } from "../../../service";
+import {
+  getCurrentUserInfo,
+  saveUserInfo,
+  uploadAvatar,
+} from "../../../service";
+import { useRequest } from "ahooks";
 
 const EditProfileScreen = ({ route, navigation }) => {
-  const [profileData, setProfileData] = React.useState({
-    avatar: `https://picsum.photos/200?random=${Math.floor(
-      Math.random() * 1000
-    )}`,
-    nickname: "自信膨胀的汤姆",
-    birthday: new Date("2000-01-01"),
-    gender: "男",
-    city: "上海",
-    education: "本科",
-    monthlyIncome: "20K-50K",
-    industry: "互联网",
-    maritalStatus: "未婚",
-  });
+  const { data, run } = useRequest(getCurrentUserInfo);
 
   const [bottomSheetVisible, setBottomSheetVisible] = React.useState(null);
-  const [nickname, setNickname] = React.useState(profileData.nickname);
+  const [nickName, setNickName] = React.useState(data?.nickName);
 
-  const handleChange = (key, value) => {
-    setProfileData((prevProfileData) => ({ ...prevProfileData, [key]: value }));
+  const handleChange = async (key, value) => {
     setBottomSheetVisible(null);
+    await saveUserInfo({
+      ...data,
+      [key]: value,
+    });
+    run();
   };
 
   const onClose = () => {
@@ -54,14 +50,16 @@ const EditProfileScreen = ({ route, navigation }) => {
     });
 
     if (result.canceled) return;
-    const { uri, fileName } = result.assets[0];
-    setProfileData((prevProfileData) => ({ ...prevProfileData, avatar: uri }));
+    const image = result.assets[0];
     // 上传头像到服务器
-    const response = await fetch(uri);
-    const blob = await response.blob();
     const formData = new FormData();
-    formData.append('headPhoto', blob, fileName);
+    formData.append("headPhoto", {
+      uri: image.uri,
+      type: "image/jpeg",
+      name: "avatar.jpg",
+    } as any);
     await uploadAvatar(formData);
+    run();
   };
 
   return (
@@ -86,18 +84,21 @@ const EditProfileScreen = ({ route, navigation }) => {
           <ListItem.Content>
             <ListItem.Title>头像</ListItem.Title>
           </ListItem.Content>
-          <Avatar rounded source={{ uri: profileData.avatar }} />
+          <Avatar rounded source={{ uri: data?.logo }} />
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
         <ListItem
           bottomDivider
-          onPress={() => setBottomSheetVisible("nickname")}
+          onPress={() => {
+            setNickName(data?.nickName);
+            setBottomSheetVisible("nickName");
+          }}
         >
           <ListItem.Content>
             <ListItem.Title>昵称</ListItem.Title>
           </ListItem.Content>
-          <Text>{profileData.nickname}</Text>
+          <Text>{data?.nickName}</Text>
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
@@ -110,15 +111,15 @@ const EditProfileScreen = ({ route, navigation }) => {
           <ListItem.Content>
             <ListItem.Title>生日</ListItem.Title>
           </ListItem.Content>
-          <Text>{dayjs(profileData.birthday).format("YYYY-MM-DD")}</Text>
+          <Text>{dayjs(data?.birthday).format("YYYY-MM-DD")}</Text>
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
-        <ListItem bottomDivider onPress={() => setBottomSheetVisible("gender")}>
+        <ListItem bottomDivider onPress={() => setBottomSheetVisible("sex")}>
           <ListItem.Content>
             <ListItem.Title>性别</ListItem.Title>
           </ListItem.Content>
-          <Text>{profileData.gender}</Text>
+          <Text>{data?.sex === "MAN" ? "男" : "女"}</Text>
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
@@ -126,29 +127,23 @@ const EditProfileScreen = ({ route, navigation }) => {
           <ListItem.Content>
             <ListItem.Title>城市</ListItem.Title>
           </ListItem.Content>
-          <Text>{profileData.city}</Text>
+          <Text>{data?.city}</Text>
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
-        <ListItem
-          bottomDivider
-          onPress={() => setBottomSheetVisible("education")}
-        >
+        <ListItem bottomDivider onPress={() => setBottomSheetVisible("edu")}>
           <ListItem.Content>
             <ListItem.Title>学历</ListItem.Title>
           </ListItem.Content>
-          <Text>{profileData.education}</Text>
+          <Text>{data?.edu}</Text>
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
-        <ListItem
-          bottomDivider
-          onPress={() => setBottomSheetVisible("monthlyIncome")}
-        >
+        <ListItem bottomDivider onPress={() => setBottomSheetVisible("income")}>
           <ListItem.Content>
             <ListItem.Title>月收入</ListItem.Title>
           </ListItem.Content>
-          <Text>{profileData.monthlyIncome}</Text>
+          <Text>{data?.income}</Text>
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
@@ -159,29 +154,29 @@ const EditProfileScreen = ({ route, navigation }) => {
           <ListItem.Content>
             <ListItem.Title>行业</ListItem.Title>
           </ListItem.Content>
-          <Text>{profileData.industry}</Text>
+          <Text>{data?.industry}</Text>
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
         <ListItem
           bottomDivider
-          onPress={() => setBottomSheetVisible("maritalStatus")}
+          onPress={() => setBottomSheetVisible("marriage")}
         >
           <ListItem.Content>
             <ListItem.Title>婚姻状态</ListItem.Title>
           </ListItem.Content>
-          <Text>{profileData.maritalStatus}</Text>
+          <Text>{data?.marriage}</Text>
           <Icon name="chevron-right" type="feather" color="#ccc" />
         </ListItem>
 
         <DateTimePicker
           visible={bottomSheetVisible === "birthday"}
-          value={profileData.birthday}
+          value={data?.birthday ? new Date(data?.birthday) : undefined}
           onClose={onClose}
           onChange={(date) => handleChange("birthday", date)}
         />
 
-        {bottomSheetVisible === "nickname" && (
+        {bottomSheetVisible === "nickName" && (
           <Modal animationType="slide" visible>
             <View style={styles.bottomSheet}>
               <View style={styles.bottomSheetHeader}>
@@ -190,15 +185,15 @@ const EditProfileScreen = ({ route, navigation }) => {
                 </TouchableWithoutFeedback>
                 <Text style={styles.bottomSheetTitle}>修改昵称</Text>
                 <TouchableWithoutFeedback
-                  onPress={() => handleChange("nickname", nickname)}
+                  onPress={() => handleChange("nickName", nickName)}
                 >
                   <Text style={styles.bottomSheetDone}>完成</Text>
                 </TouchableWithoutFeedback>
               </View>
               <TextInput
                 style={styles.bottomSheetInput}
-                value={nickname}
-                onChangeText={(text) => setNickname(text)}
+                value={nickName}
+                onChangeText={(text) => setNickName(text)}
               />
             </View>
           </Modal>
@@ -211,43 +206,43 @@ const EditProfileScreen = ({ route, navigation }) => {
         />
 
         <Select
-          visible={bottomSheetVisible === "gender"}
+          visible={bottomSheetVisible === "sex"}
           onClose={onClose}
-          value={profileData.gender}
-          options={["男", "女", "保密"]}
-          onChange={(value) => handleChange("gender", value)}
+          value={data?.sex}
+          options={["男", "女"]}
+          onChange={(value) => handleChange("sex", value)}
         />
 
         <Select
-          visible={bottomSheetVisible === "education"}
+          visible={bottomSheetVisible === "edu"}
           onClose={onClose}
-          value={profileData.education}
+          value={data?.edu}
           options={["本科", "硕士", "博士"]}
-          onChange={(value) => handleChange("education", value)}
+          onChange={(value) => handleChange("edu", value)}
         />
 
         <Select
-          visible={bottomSheetVisible === "monthlyIncome"}
+          visible={bottomSheetVisible === "income"}
           onClose={onClose}
-          value={profileData.monthlyIncome}
+          value={data?.income}
           options={["10K以下", "10K-20K", "20K-50K", "50K以上"]}
-          onChange={(value) => handleChange("monthlyIncome", value)}
+          onChange={(value) => handleChange("income", value)}
         />
 
         <Select
           visible={bottomSheetVisible === "industry"}
           onClose={onClose}
-          value={profileData.industry}
+          value={data?.industry}
           options={["互联网", "金融", "教育", "医疗"]}
           onChange={(value) => handleChange("industry", value)}
         />
 
         <Select
-          visible={bottomSheetVisible === "maritalStatus"}
+          visible={bottomSheetVisible === "marriage"}
           onClose={onClose}
-          value={profileData.maritalStatus}
+          value={data?.marriage}
           options={["未婚", "已婚", "离异", "丧偶"]}
-          onChange={(value) => handleChange("maritalStatus", value)}
+          onChange={(value) => handleChange("marriage", value)}
         />
       </ScrollView>
     </View>

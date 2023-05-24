@@ -1,9 +1,11 @@
-import React from 'react';
-import { View, StyleSheet, Text, Modal, TouchableOpacity } from 'react-native';
-import WheelPicker from 'react-native-wheely';
+import React from "react";
+import { View, StyleSheet, Text, Modal, TouchableOpacity } from "react-native";
+import WheelPicker from "react-native-wheely";
 
 const Select = ({ visible, onClose, onChange, options, value }) => {
-  const [selectedIndex, setSelectedIndex] = React.useState(options.indexOf(value));
+  const [selectedIndex, setSelectedIndex] = React.useState(
+    Math.max(options.indexOf(value), 0)
+  );
 
   const handleCancel = () => {
     onClose();
@@ -50,32 +52,32 @@ const Select = ({ visible, onClose, onChange, options, value }) => {
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#fff",
     padding: 10,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
   },
   cancelButton: {
-    color: 'red',
+    color: "red",
     fontSize: 18,
   },
   confirmButton: {
-    color: 'blue',
+    color: "blue",
     fontSize: 18,
   },
   pickerContainer: {
-    width: '100%',
-    backgroundColor: '#fff',
+    width: "100%",
+    backgroundColor: "#fff",
     padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
   },
   picker: {

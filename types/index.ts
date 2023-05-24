@@ -148,3 +148,49 @@ export interface RecommendationMomentListItem {
   textContent?: string;
   userId?: number;
 }
+
+export interface MomentCommentsParams {
+  page: number;
+  pagesize: number;
+  movementId: string;
+}
+
+export interface MomentCommentsResponse {
+  counts: number;
+  items: MomentCommentsItem[];
+  page: number;
+  pages: number;
+  pagesize: number;
+}
+
+export interface MomentCommentsItem {
+  avatar?: string;
+  content?: string;
+  createDate?: string;
+  hasLiked?: number;
+  id?: string;
+  likeCount?: number;
+  nickname?: string;
+}
+
+export interface UserInfoResponse {
+  created: string;
+  updated: string;
+  id: number;
+  userId: number;
+  nickName: string;
+  logo: string;
+  tags: string;
+  sex: string;
+  age: number;
+  edu: string;
+  city: string;
+  birthday: string;
+  coverPic: string;
+  industry: string;
+  income: string;
+  marriage: string;
+  starCounts: number;
+  likeCounts: number;
+  fanCounts: number;
+}

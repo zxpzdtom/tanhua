@@ -1,4 +1,4 @@
-import { LoginRequest, LoginResponse, RecommendationListRequest, RecommendationListResponse, RecommendationMomentListRequest, RecommendationMomentListResponse, SaveProfileRequest, TodayBestResponse } from "../types";
+import { LoginRequest, LoginResponse, MomentCommentsParams, MomentCommentsResponse, RecommendationListRequest, RecommendationListResponse, RecommendationMomentListItem, RecommendationMomentListRequest, RecommendationMomentListResponse, SaveProfileRequest, TodayBestResponse, UserInfoResponse } from "../types";
 import request from "./request";
 
 export async function sendVerificationCode(phone: string) {
@@ -19,7 +19,11 @@ export async function saveProfile(data: SaveProfileRequest) {
 
 // 上传头像
 export async function uploadAvatar(data: FormData) {
-  return request.post("/user/loginReginfo/head", data);
+  return request.post("/user/loginReginfo/head", data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    }
+  });
 }
 
 // 获取今日佳人
@@ -46,4 +50,61 @@ export async function getFriendsMomentList(params: RecommendationMomentListReque
   return request.get("/movements", {
     params,
   });
+}
+
+// 查询单条动态
+export async function getMomentDetail(id: string): Promise<RecommendationMomentListItem> {
+  return request.get(`/movements/${id}`);
+}
+
+// 点赞动态
+export async function likeMoment(id: string): Promise<number> {
+  return request.get(`/movements/${id}/like`);
+}
+
+// 取消点赞动态
+export async function unlikeMoment(id: string): Promise<number> {
+  return request.get(`/movements/${id}/dislike`);
+}
+
+// 获取动态的评论列表
+export async function getMomentComments(params: MomentCommentsParams): Promise<MomentCommentsResponse> {
+  return request.get('/comments', {
+    params,
+  });
+}
+
+// 对动态发表评论
+export async function publishMomentComment(movementId: string, comment: string): Promise<number> {
+  return request.post('/comments', {
+    movementId,
+    comment,
+  });
+}
+
+// 查询当前登录人信息
+export async function getCurrentUserInfo(): Promise<UserInfoResponse> {
+  return request.get('/personalCentral/integratedInformation');
+}
+
+// 保存个人资料
+export async function saveUserInfo(params: Partial<UserInfoResponse>): Promise<number> {
+  return request.get('/personalCentral/savaUserInfo', {
+    params,
+  });
+}
+
+// 我的粉丝列表
+export async function getMyFollowers(): Promise<RecommendationListResponse> {
+  return request.get('/personalCentral/queryMyFollowers');
+}
+
+// 我的关注列表
+export async function getMyFollowings(): Promise<RecommendationListResponse> {
+  return request.get('/personalCentral/queryToFollowers');
+}
+
+// 我的动态列表
+export async function getMyMoments(): Promise<RecommendationMomentListResponse> {
+  return request.get('/queryMyMovements');
 }

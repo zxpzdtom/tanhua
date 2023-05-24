@@ -2,9 +2,14 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, Icon, Text, Button } from '@rneui/themed';
+import { useRequest } from 'ahooks';
+import { getCurrentUserInfo } from '../../../service';
 
 const MyScreen = () => {
   const navigation = useNavigation<any>();
+
+  const { data } = useRequest(getCurrentUserInfo);
+
   const handleEditProfile = React.useCallback(() => {
     navigation.navigate('EditProfile');
   }, []);
@@ -16,49 +21,47 @@ const MyScreen = () => {
         <Avatar
           size="large"
           rounded
-          source={{ uri: 'https://randomuser.me/api/portraits/men/3.jpg' }}
+          source={{ uri: data?.logo }}
           containerStyle={styles.avatar}
         />
         <View style={styles.info}>
-          <Text h4>自信膨胀的汤姆</Text>
+          <Text h4>{data?.nickName}</Text>
           <View style={styles.row}>
             <Icon name="gender-male" type="material-community" size={16} />
-            <Text style={styles.label}>男</Text>
+            <Text style={styles.label}>{data?.sex === 'MAN' ? '男' : '女'}</Text>
             <Icon name="cake" type="material-community" size={16} />
-            <Text style={styles.label}>28</Text>
+            <Text style={styles.label}>{data?.age}</Text>
             <Icon name="map-marker" type="font-awesome" size={16} />
-            <Text style={styles.label}>上海</Text>
+            <Text style={styles.label}>{data?.city}</Text>
           </View>
         </View>
       </View>
       <View style={styles.card}>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>100</Text>
+        <TouchableOpacity style={styles.stat} onPress={() => navigation.navigate('Friends', { title: "我的关注" })}>
+          <Text style={styles.statValue}>{data?.starCounts || 0}</Text>
           <Text style={styles.statLabel}>我的关注</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>200</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.stat} onPress={() => navigation.navigate('Friends', { title: "我的喜欢" })}>
+          <Text style={styles.statValue}>{data?.likeCounts || 0}</Text>
           <Text style={styles.statLabel}>喜欢</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>300</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.stat} onPress={() => navigation.navigate('Friends', { title: "我的粉丝" })}>
+          <Text style={styles.statValue}>{data?.fanCounts || 0}</Text>
           <Text style={styles.statLabel}>粉丝</Text>
-        </View>
+        </TouchableOpacity>
       </View>
       <View style={styles.list}>
         <TouchableOpacity style={styles.item} onPress={handleEditProfile}>
           <Icon name="account-outline" type="material-community" size={24} />
           <Text style={styles.itemLabel}>个人信息</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.item}>
+        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('PersonalCircle', { title: "我的动态" })}>
           <Icon name="newspaper-variant-outline" type="material-community" size={24} />
           <Text style={styles.itemLabel}>我的动态</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.item}>
-          <Icon name="eye-outline" type="material-community" size={24} />
-          <Text style={styles.itemLabel}>谁看过我</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.item}>
+        <TouchableOpacity style={styles.item} onPress={() => {
+          navigation.navigate('Customer');
+        }}>
           <Icon name="headset" type="material-community" size={24} />
           <Text style={styles.itemLabel}>客服在线</Text>
         </TouchableOpacity>

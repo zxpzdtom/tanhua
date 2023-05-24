@@ -1,15 +1,26 @@
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { Icon } from '@rneui/themed';
-import { getFriendsMomentList, getRecommendationMomentList } from '../../../service';
-import { RecommendationMomentListItem } from '../../../types';
-import Empty from '../Empty';
+import React from "react";
+import { useNavigation } from "@react-navigation/native";
+import {
+  View,
+  Text,
+  Image,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
+import { Icon } from "@rneui/themed";
+import {
+  getFriendsMomentList,
+  getRecommendationMomentList,
+} from "../../../service";
+import { RecommendationMomentListItem } from "../../../types";
+import Empty from "../Empty";
 
 const Separator = () => <View style={styles.separator} />;
 
 interface CircleListProps {
-  type: 'recommendation' | 'friend';
+  type: "recommendation" | "friend";
 }
 
 const CircleList: React.FC<CircleListProps> = (props) => {
@@ -18,16 +29,22 @@ const CircleList: React.FC<CircleListProps> = (props) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const pageRef = React.useRef(1);
+  const hasMoreRef = React.useRef(true);
 
   let api = getRecommendationMomentList;
-  if (props.type === 'friend') {
+  if (props.type === "friend") {
     api = getFriendsMomentList;
   }
 
   const renderItem = ({ item }: { item: RecommendationMomentListItem }) => (
-    <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('DynamicDetail', {
-      id: item.id,
-    })}>
+    <TouchableOpacity
+      style={styles.item}
+      onPress={() =>
+        navigation.navigate("DynamicDetail", {
+          id: item.id,
+        })
+      }
+    >
       <View style={styles.left}>
         <Image source={{ uri: item.avatar }} style={styles.avatar} />
       </View>
@@ -61,17 +78,18 @@ const CircleList: React.FC<CircleListProps> = (props) => {
   const handleLoadMore = async () => {
     try {
       if (isLoading) return;
-      if (pageRef.current > 1 && data.length === 0) return;
+      if (!hasMoreRef.current) return;
       setIsLoading(true);
       const res = await api({ page: pageRef.current, pagesize: 10 });
+      if (res?.items?.length < 10) {
+        hasMoreRef.current = false;
+      }
       pageRef.current += 1;
-      if (!res) return;
       setData([...data, ...res.items]);
     } finally {
       setIsLoading(false);
     }
   };
-
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -107,7 +125,7 @@ const CircleList: React.FC<CircleListProps> = (props) => {
 
 const styles = StyleSheet.create({
   item: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
@@ -123,48 +141,48 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 10,
   },
   nickname: {
     marginRight: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   time: {
-    color: '#999',
+    color: "#999",
   },
   text: {
     lineHeight: 20,
     marginBottom: 10,
   },
   images: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: 10,
     gap: 10,
   },
   image: {
-    width: '30%',
+    width: "30%",
     height: 50,
     aspectRatio: 1,
   },
   footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   iconContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: 20,
   },
   iconText: {
     marginLeft: 5,
-    color: '#999',
+    color: "#999",
   },
   separator: {
     height: 1,
-    backgroundColor: '#eee',
+    backgroundColor: "#eee",
     marginLeft: 76, // left padding + avatar width + margin right
   },
   list: {
@@ -174,15 +192,15 @@ const styles = StyleSheet.create({
   loading: {
     marginVertical: 16,
     fontSize: 16,
-    color: '#999',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
+    color: "#999",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
   },
   loadingText: {
     marginLeft: 10,
-    color: '#999',
+    color: "#999",
   },
 });
 

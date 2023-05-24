@@ -1,89 +1,59 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-} from "react-native";
-import { Header, Icon, Input } from "@rneui/themed";
-import mockjs from "mockjs";
-
-const mockData = mockjs.mock({
-  "list|20": [
-    {
-      "id|+1": 1,
-      avatar: "@image(50x50)",
-      nickname: "@cname",
-      text: "@cparagraph(1, 3)",
-      "images|1-3": ["@image(150x150)"],
-      distance: "@float(0, 10, 1, 1)km",
-      time: "@datetime",
-      likes: "@integer(0, 100)",
-      "comments|1-3": [
-        {
-          "id|+1": 1,
-          avatar: "@image(50x50)",
-          nickname: "@cname",
-          text: "@csentence",
-          time: "@datetime",
-        },
-      ],
-    },
-  ],
-}).list;
+import React from "react";
+import { View, Text, Image, StyleSheet, FlatList } from "react-native";
+import { Header, Icon } from "@rneui/themed";
+import { useRequest } from "ahooks";
+import { getMyMoments } from "../../../service";
+import { RecommendationMomentListItem } from "../../../types";
 
 const Separator = () => <View style={styles.separator} />;
 
-const CommentItem = ({ item }) => (
-  <View style={styles.commentItem}>
-    <Image
-      source={{
-        uri: `https://picsum.photos/200?random=${Math.floor(
-          Math.random() * 1000
-        )}`,
-      }}
-      style={styles.commentAvatar}
-    />
-    <View style={styles.commentContent}>
-      <Text style={styles.commentNickname}>{item.nickname}</Text>
-      <Text style={styles.commentText}>{item.text}</Text>
-      <Text style={styles.commentTime}>{item.time}</Text>
+const renderItem = ({ item }: { item: RecommendationMomentListItem }) => (
+  <View>
+    <View style={styles.item}>
+      <View style={styles.left}>
+        <Image
+          source={{
+            uri: `https://picsum.photos/200?random=${Math.floor(
+              Math.random() * 1000
+            )}`,
+          }}
+          style={styles.avatar}
+        />
+      </View>
+      <View style={styles.right}>
+        <View style={styles.header}>
+          <Text style={styles.nickname}>{item.nickname}</Text>
+          <Text style={styles.time}>{item.createDate}</Text>
+        </View>
+        <Text numberOfLines={3} ellipsizeMode="tail" style={styles.text}>
+          {item.textContent}
+        </Text>
+        <View style={styles.images}>
+          {item.imageContent.map((image, index) => (
+            <Image
+              key={index}
+              source={{
+                uri: image,
+              }}
+              style={styles.image}
+            />
+          ))}
+        </View>
+      </View>
     </View>
   </View>
 );
 
 const PersonalCircleScreen = ({ route, navigation }) => {
-  const { id } = route.params;
-  console.log(id);
-  const [dynamic, setDynamic] = useState(mockData[0]);
-  const [comment, setComment] = useState("");
-
-  const handleComment = () => {
-    if (comment.trim()) {
-      const newComment = {
-        id: dynamic.comments.length + 1,
-        avatar: `https://picsum.photos/200?random=${Math.floor(
-          Math.random() * 1000
-        )}`,
-        nickname: "匿名用户",
-        text: comment,
-        time: new Date().toLocaleString(),
-      };
-      setDynamic({
-        ...dynamic,
-        comments: [...dynamic.comments, newComment],
-      });
-      setComment("");
-    }
-  };
+  const { id, title } = route.params;
+  // const {} = useRequest(title === '我的动态' ? getMyMoments : () => {})
+  const { data } = useRequest(getMyMoments);
 
   return (
     <View style={styles.container}>
       <Header
         centerComponent={{
-          text: "他的动态",
+          text: title || "TA的动态",
           style: { color: "#fff", fontSize: 18 },
         }}
         leftComponent={
@@ -97,83 +67,11 @@ const PersonalCircleScreen = ({ route, navigation }) => {
         containerStyle={{ backgroundColor: "#007AFF" }}
       />
       <FlatList
-        data={dynamic.comments}
-        renderItem={CommentItem}
+        data={data?.items}
+        renderItem={renderItem}
         keyboardDismissMode="on-drag"
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         ItemSeparatorComponent={Separator}
-        ListHeaderComponent={() => (
-          <View>
-            <View style={styles.item}>
-              <View style={styles.left}>
-                <Image
-                  source={{
-                    uri: `https://picsum.photos/200?random=${Math.floor(
-                      Math.random() * 1000
-                    )}`,
-                  }}
-                  style={styles.avatar}
-                />
-              </View>
-              <View style={styles.right}>
-                <View style={styles.header}>
-                  <Text style={styles.nickname}>{dynamic.nickname}</Text>
-                  <Text style={styles.time}>{dynamic.time}</Text>
-                </View>
-                <Text
-                  numberOfLines={3}
-                  ellipsizeMode="tail"
-                  style={styles.text}
-                >
-                  {dynamic.text}
-                </Text>
-                <View style={styles.images}>
-                  {dynamic.images.map((image, index) => (
-                    <Image
-                      key={index}
-                      source={{
-                        uri: `https://picsum.photos/200?random=${Math.floor(
-                          Math.random() * 1000
-                        )}`,
-                      }}
-                      style={styles.image}
-                    />
-                  ))}
-                </View>
-              </View>
-            </View>
-            <View style={styles.commentHeader}>
-              <Text style={styles.commentTitle}>
-                评论 ({dynamic.comments.length})
-              </Text>
-              <TouchableOpacity
-                onPress={() => console.log("点赞")}
-                style={{ flexDirection: "row", gap: 8 }}
-              >
-                <Icon name="thumbs-up" type="feather" size={20} color="#999" />
-                <Text>{dynamic.likes}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-        ListFooterComponent={() => (
-          <View style={styles.commentInputContainer}>
-            <Input
-              key={dynamic.id}
-              placeholder="请输入评论内容"
-              value={comment}
-              onChangeText={(text) => setComment(text)}
-              containerStyle={styles.commentInput}
-              inputContainerStyle={{ borderBottomWidth: 0 }}
-            />
-            <TouchableOpacity
-              style={styles.commentButton}
-              onPress={handleComment}
-            >
-              <Text style={styles.commentButtonText}>发送</Text>
-            </TouchableOpacity>
-          </View>
-        )}
       />
     </View>
   );

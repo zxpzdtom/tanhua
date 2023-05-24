@@ -1,145 +1,223 @@
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
-import { Header, Icon, Input } from '@rneui/themed';
-import mockjs from 'mockjs';
-
-const mockData = mockjs.mock({
-  'list|20': [
-    {
-      'id|+1': 1,
-      'avatar': '@image(50x50)',
-      'nickname': '@cname',
-      'text': '@cparagraph(1, 3)',
-      'images|1-3': ['@image(150x150)'],
-      'distance': '@float(0, 10, 1, 1)km',
-      'time': '@datetime',
-      'likes': '@integer(0, 100)',
-      'comments|1-3': [
-        {
-          'id|+1': 1,
-          'avatar': '@image(50x50)',
-          'nickname': '@cname',
-          'text': '@csentence',
-          'time': '@datetime',
-        }
-      ],
-    }
-  ]
-}).list;
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
+import { Header, Icon, Input } from "@rneui/themed";
+import { useRequest } from "ahooks";
+import {
+  getMomentComments,
+  getMomentDetail,
+  likeMoment,
+  publishMomentComment,
+  unlikeMoment,
+} from "../../../service";
+import Empty from "../../components/Empty";
+import { MomentCommentsItem } from "../../../types";
 
 const Separator = () => <View style={styles.separator} />;
 
-const CommentItem = ({ item }) => (
+const CommentItem = ({ item }: { item: MomentCommentsItem }) => (
   <View style={styles.commentItem}>
-    <Image source={{ uri: `https://picsum.photos/200?random=${Math.floor(Math.random() * 1000)}` }} style={styles.commentAvatar} />
+    <Image source={{ uri: item.avatar }} style={styles.commentAvatar} />
     <View style={styles.commentContent}>
       <Text style={styles.commentNickname}>{item.nickname}</Text>
-      <Text style={styles.commentText}>{item.text}</Text>
-      <Text style={styles.commentTime}>{item.time}</Text>
+      <Text style={styles.commentText}>{item.content}</Text>
+      <Text style={styles.commentTime}>{item.createDate}</Text>
     </View>
   </View>
 );
 
 const DynamicDetailScreen = ({ route, navigation }) => {
   const { id } = route.params;
-  console.log(id);
-  const [dynamic, setDynamic] = useState(mockData[0]);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const pageRef = React.useRef(1);
+  const hasMoreRef = React.useRef(true);
+  const [comments, setComments] = React.useState([]);
+  const detailReq = useRequest(() => getMomentDetail(id));
+  const data = detailReq.data || {};
 
-  const handleComment = () => {
-    Keyboard.dismiss();
+  const handleComment = async () => {
     if (comment.trim()) {
-      const newComment = {
-        id: dynamic.comments.length + 1,
-        avatar: `https://picsum.photos/200?random=${Math.floor(Math.random() * 1000)}`,
-        nickname: '匿名用户',
-        text: comment,
-        time: new Date().toLocaleString(),
-      };
-      setDynamic({
-        ...dynamic,
-        comments: [...dynamic.comments, newComment],
-      });
-      setComment('');
+      await publishMomentComment(id, comment.trim());
+      setComment("");
+      handleRefresh();
     }
   };
 
+  const handleLikePress = async () => {
+    if (data.hasLiked) {
+      await unlikeMoment(id);
+    } else {
+      await likeMoment(id);
+    }
+    detailReq.run();
+  };
+
+  const handleLoadMore = async () => {
+    try {
+      if (isLoading) return;
+      if (!hasMoreRef.current) return;
+      setIsLoading(true);
+      const res = await getMomentComments({
+        page: pageRef.current,
+        pagesize: 10,
+        movementId: id,
+      });
+      if (res?.items?.length < 10) {
+        hasMoreRef.current = false;
+      }
+      pageRef.current += 1;
+      setComments([...comments, ...res.items]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    const res = await getMomentComments({
+      page: 1,
+      pagesize: 10,
+      movementId: id,
+    });
+    pageRef.current = 2;
+    setComments(res.items);
+    setIsRefreshing(false);
+  };
+
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={styles.container}>
-        <Header
-          centerComponent={{ text: '动态详情', style: { color: '#fff', fontSize: 18 } }}
-          leftComponent={<Icon name='chevron-left' type="feather" color='#fff' onPress={navigation.goBack} />}
-          containerStyle={{ backgroundColor: '#007AFF' }}
-        />
-        <FlatList
-          data={dynamic.comments}
-          renderItem={CommentItem}
-          keyboardDismissMode="on-drag"
-          keyExtractor={(item) => item.id.toString()}
-          ItemSeparatorComponent={Separator}
-          ListHeaderComponent={() => (
-            <View>
-              <View style={styles.item}>
-                <View style={styles.left}>
-                  <Image source={{ uri: `https://picsum.photos/200?random=${Math.floor(Math.random() * 1000)}` }} style={styles.avatar} />
-                </View>
-                <View style={styles.right}>
-                  <View style={styles.header}>
-                    <Text style={styles.nickname}>{dynamic.nickname}</Text>
-                    <Text style={styles.time}>{dynamic.time}</Text>
-                  </View>
-                  <Text numberOfLines={3} ellipsizeMode="tail" style={styles.text}>
-                    {dynamic.text}
-                  </Text>
-                  <View style={styles.images}>
-                    {dynamic.images.map((image, index) => (
-                      <Image key={index} source={{ uri: `https://picsum.photos/200?random=${Math.floor(Math.random() * 1000)}` }} style={styles.image} />
-                    ))}
-                  </View>
-                </View>
+    <View style={styles.container}>
+      <Header
+        centerComponent={{
+          text: "动态详情",
+          style: { color: "#fff", fontSize: 18 },
+        }}
+        leftComponent={
+          <Icon
+            name="chevron-left"
+            type="feather"
+            color="#fff"
+            onPress={navigation.goBack}
+          />
+        }
+        containerStyle={{ backgroundColor: "#007AFF" }}
+      />
+      <FlatList
+        data={comments}
+        renderItem={CommentItem}
+        keyboardDismissMode="on-drag"
+        keyExtractor={(item) => item.id}
+        ItemSeparatorComponent={Separator}
+        onRefresh={handleRefresh}
+        refreshing={isRefreshing}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.1}
+        ListEmptyComponent={<Empty />}
+        ListHeaderComponent={() => (
+          <View>
+            <View style={styles.item}>
+              <View style={styles.left}>
+                <Image source={{ uri: data.avatar }} style={styles.avatar} />
               </View>
-              <View style={styles.commentHeader}>
-                <Text style={styles.commentTitle}>评论 ({dynamic.comments.length})</Text>
-                <TouchableOpacity onPress={() => console.log('点赞')} style={{ flexDirection: 'row', gap: 8 }}>
-                  <Icon name="thumbs-up" type="feather" size={20} color="#999" />
-                  <Text>{dynamic.likes}</Text>
-                </TouchableOpacity>
+              <View style={styles.right}>
+                <View style={styles.header}>
+                  <Text style={styles.nickname}>{data.nickname}</Text>
+                  <Text style={styles.time}>{data.createDate}</Text>
+                </View>
+                <Text
+                  numberOfLines={3}
+                  ellipsizeMode="tail"
+                  style={styles.text}
+                >
+                  {data.textContent}
+                </Text>
+                <View style={styles.images}>
+                  {data.imageContent?.map((image, index) => (
+                    <Image
+                      key={index}
+                      source={{ uri: image }}
+                      style={styles.image}
+                    />
+                  ))}
+                </View>
               </View>
             </View>
-          )}
-          ListFooterComponent={() => (
-            <View style={styles.commentInputContainer}>
-              <Input
-                key={dynamic.id}
-                placeholder="请输入评论内容"
-                value={comment}
-                onChangeText={(text) => setComment(text)}
-                containerStyle={styles.commentInput}
-                inputContainerStyle={{ borderBottomWidth: 0 }}
-              />
-              <TouchableOpacity style={styles.commentButton} onPress={handleComment}>
-                <Text style={styles.commentButtonText}>发送</Text>
+            <View style={styles.commentHeader}>
+              <Text style={styles.commentTitle}>
+                评论 ({data.commentCount})
+              </Text>
+              <TouchableOpacity
+                onPress={handleLikePress}
+                style={{ flexDirection: "row", gap: 8 }}
+              >
+                <Icon
+                  name="thumbs-up"
+                  type="feather"
+                  size={20}
+                  color={data.hasLiked ? "red" : "#999"}
+                />
+                <Text>{data.likeCount || 0}</Text>
               </TouchableOpacity>
             </View>
-          )}
+          </View>
+        )}
+        ListFooterComponent={() =>
+          isLoading ? (
+            <View style={styles.loading}>
+              <ActivityIndicator size="small" color="#999" />
+              <Text style={styles.loadingText}>正在加载...</Text>
+            </View>
+          ) : null
+        }
+      />
+      <View style={styles.commentInputContainer}>
+        <Input
+          placeholder="请输入评论内容"
+          value={comment}
+          onChangeText={setComment}
+          containerStyle={styles.commentInput}
+          inputContainerStyle={{ borderBottomWidth: 0 }}
         />
+        <TouchableOpacity style={styles.commentButton} onPress={handleComment}>
+          <Text style={styles.commentButtonText}>发送</Text>
+        </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   separator: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
+  },
+  loading: {
+    marginVertical: 16,
+    fontSize: 16,
+    color: "#999",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+  },
+  loadingText: {
+    marginLeft: 10,
+    color: "#999",
   },
   item: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 10,
     marginTop: 10,
   },
@@ -155,18 +233,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 10,
   },
   nickname: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   time: {
     fontSize: 12,
-    color: '#999',
+    color: "#999",
   },
   text: {
     fontSize: 16,
@@ -174,8 +252,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   images: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: 10,
   },
   image: {
@@ -185,20 +263,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   commentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 10,
     paddingVertical: 15,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   commentTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   commentItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 10,
   },
   commentAvatar: {
@@ -212,7 +290,7 @@ const styles = StyleSheet.create({
   },
   commentNickname: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   commentText: {
     fontSize: 14,
@@ -221,16 +299,16 @@ const styles = StyleSheet.create({
   },
   commentTime: {
     fontSize: 12,
-    color: '#999',
+    color: "#999",
   },
   commentInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     borderTopWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   commentInput: {
     flex: 1,
@@ -239,14 +317,14 @@ const styles = StyleSheet.create({
     height: 40,
   },
   commentButton: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 5,
     marginRight: 10,
   },
   commentButtonText: {
-    color: '#fff',
+    color: "#fff",
   },
 });
 

@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Tab, TabView } from '@rneui/themed';
-import CircleList from '../../components/CircleList';
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import { Tab, TabView } from "@rneui/themed";
+import CircleList from "../../components/CircleList";
 
 const CircleScreen = () => {
   const [activeIndex, setActiveIndex] = React.useState(0);
