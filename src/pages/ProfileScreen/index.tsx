@@ -35,7 +35,7 @@ const ProfileScreen = () => {
       gender,
       birthday: dayjs(birthday).format("YYYY-MM-DD"),
       city,
-      header: "",
+      header: "https://bishe-qubar.oss-cn-hangzhou.aliyuncs.com/images/logo/21.jpg",
       nickname: name,
     });
     navigation.navigate("Main");

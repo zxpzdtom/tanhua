@@ -214,7 +214,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           onClose={onClose}
           value={data?.sex}
           options={["男", "女"]}
-          onChange={(value) => handleChange("sex", value)}
+          onChange={(value) => handleChange("gender", value === '男' ? 'man' : 'woman')}
         />
 
         <Select

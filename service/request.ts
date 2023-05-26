@@ -2,7 +2,7 @@ import axios from "axios";
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const baseURL = 'http://p4ho3bab.dongtaiyuming.net';
+export const baseURL = 'http://3z3vk2wh.dongtaiyuming.net';
 
 const instance = axios.create({
   baseURL,

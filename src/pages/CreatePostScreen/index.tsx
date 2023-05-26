@@ -17,7 +17,6 @@ const CreatePostScreen = ({ navigation }) => {
   const [text, setText] = useState("");
   const [images, setImages] = useState([]);
   const [location, setLocation] = useState(null);
-  const [city, setCity] = useState("上海");
 
   React.useEffect(() => {
     (async () => {
@@ -28,7 +27,6 @@ const CreatePostScreen = ({ navigation }) => {
       }
 
       const res = await Location.getCurrentPositionAsync({});
-      console.debug("%c Line:31 🌽 res", "color:#ea7e5c", res);
       setLocation({
         latitude: res?.coords?.latitude,
         longitude: res?.coords?.longitude,
@@ -49,19 +47,21 @@ const CreatePostScreen = ({ navigation }) => {
   };
 
   const handlePressPost = async () => {
-    const formData = new FormData();
-    formData.append("textContent", text);
-    const imageContent: any = images.map((image, index) => ({
-      uri: image,
-      type: "image/jpeg",
-      name: `image${index}.jpg`,
-    }));
-    formData.append("imageContent", imageContent);
-    formData.append("location", city || "上海");
-    formData.append("longitude", location.longitude || "31.179502");
-    formData.append("latitude", location.latitude || "121.510979");
-
     try {
+      const formData = new FormData();
+      formData.append("textContent", text);
+      const imageContent: any = images.map((image, index) => ({
+        uri: image,
+        type: "image/jpeg",
+        name: `image${index}.jpg`,
+      }));
+      formData.append("imageContent", imageContent);
+      const longitude = location?.longitude || "121.510979";
+      const latitude = location?.latitude || "31.179502";
+      const res = await fetch(`http://restapi.amap.com/v3/geocode/regeo?key=e39d38ca810849bbee21937c3a6cc00c&location=${longitude},${latitude}&poitype=&radius=1000&extensions=base&batch=false&roadlevel=1`).then(res => res.json())
+      formData.append("location", res?.regeocode?.addressComponent?.province || "上海");
+      formData.append("longitude", longitude);
+      formData.append("latitude", latitude);
       await publishMoment(formData);
       Toast.show({
         type: ALERT_TYPE.SUCCESS,
